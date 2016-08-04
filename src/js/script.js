@@ -20,6 +20,7 @@ var options = {
   maximumAge: 0
 };
 
+
 function success(pos) {
   lat = pos.coords.latitude;
   long = pos.coords.longitude;
