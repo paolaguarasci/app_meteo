@@ -5626,38 +5626,15 @@
             return this.charAt(0).toUpperCase() + this.slice(1);
         };
         var lat, long, apiID, apiCall;
-        var condizioni, temperaturaC, temperaturaF, luogo, unitaDiMisura, nazione, icon;
+        var condizioni, temperaturaC, temperaturaF, luogo, unitaDiMisura, nazione, icon, country;
+        lat = 0;
+        long = 0;
         apiID = "bcfc647b5d633c924d1b9b0f10190539";
         var options = {
             enableHighAccuracy: true,
             timeout: 5e3,
             maximumAge: 0
         };
-        function success(pos) {
-            lat = pos.coords.latitude;
-            long = pos.coords.longitude;
-            apiCall = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + long;
-            apiCall += "&APPID=" + apiID;
-            apiCall += "&units=metric";
-            apiCall += "&lang=IT";
-            $.getJSON(apiCall, function(json) {
-                condizioni = json.weather[0].description;
-                temperaturaC = Math.round(json.main.temp * 10) / 10;
-                temperaturaF = toFaren(temperaturaC);
-                luogo = json.name;
-                nazione = json.sys.country;
-                icon = "http://openweathermap.org/img/w/" + json.weather[0].icon + ".png";
-                $(".luogo").html(luogo + ", " + nazione);
-                $(".stato").html(condizioni.capitalize());
-                $("#temp").html(temperaturaC);
-                $(".ico").prop("src", icon);
-                document.getElementById("cof").addEventListener("click", cambioUnitaDiMisura, false);
-            });
-        }
-        function error(err) {
-            console.warn("ERROR(" + err.code + "): " + err.message);
-        }
-        navigator.geolocation.getCurrentPosition(success, error, options);
         function cambioUnitaDiMisura() {
             var t = $("#temp");
             var cof = $("#cof");
@@ -5670,8 +5647,37 @@
             }
         }
         function toFaren(tempC) {
-            return tempC * 1.8 + 32;
+            var f = tempC * 1.8 + 32;
+            return Math.round(f * 10) / 10;
         }
+        $.ajax({
+            url: "http://ip-api.com/json/?callback=?",
+            dataType: "json",
+            async: false,
+            success: function(data) {
+                lat = data.lat;
+                long = data.lon;
+                country = data.countryCode;
+                console.log(long + " " + lat);
+                apiCall = "http://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + long;
+                apiCall += "&APPID=" + apiID;
+                apiCall += "&units=metric";
+                apiCall += "&lang=" + country;
+                $.getJSON(apiCall, function(json) {
+                    condizioni = json.weather[0].description;
+                    temperaturaC = Math.round(json.main.temp * 10) / 10;
+                    temperaturaF = toFaren(temperaturaC);
+                    luogo = json.name;
+                    nazione = json.sys.country;
+                    icon = "http://openweathermap.org/img/w/" + json.weather[0].icon + ".png";
+                    $(".luogo").html(luogo + ", " + nazione);
+                    $(".stato").html(condizioni.capitalize());
+                    $("#temp").html(temperaturaC);
+                    $(".ico").prop("src", icon);
+                    document.getElementById("cof").addEventListener("click", cambioUnitaDiMisura, false);
+                });
+            }
+        });
     }, {
         jquery: 1
     } ]
